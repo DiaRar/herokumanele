@@ -36,8 +36,7 @@ module.exports = {
 		if (!playlist) {
 			playlist = [];
 		}
-		console.log(interaction.member.voice);
-		if (interaction.member.voice) {
+		if (interaction.member.voice.channelId) {
 			if (!playlist.length) await interaction.reply({ content : 'Now playing: ' + vedeo.url }); else await interaction.reply({ content: 'Added to queue: ' + vedeo.url });
 			channel = interaction.member.voice.channelId;
 			connection = getVoiceConnection(interaction.guildId);
@@ -90,6 +89,9 @@ module.exports = {
 			}
 			playlist.push(vedeo);
 			client.playlists.set(interaction.guildId, playlist);
+		}
+		else {
+			await interaction.reply('Please go to a voice channel!');
 		}
 
 	},
