@@ -4,6 +4,7 @@ const { joinVoiceChannel, createAudioResource, getVoiceConnection, createAudioPl
 const util = require('util');
 const exec = util.promisify(require('child_process').exec);
 const validUrl = require('valid-url');
+const { Interaction } = require('discord.js');
 module.exports = {
 	data: new SlashCommandBuilder()
 		.setName('play')
@@ -13,8 +14,8 @@ module.exports = {
 				.setDescription('Se stie, url sau numele melodiei')
 				.setRequired(true)),
 	async execute(client, interaction, args) {
-		let video, channel, resource, connection, potato = true, playlist = client.playlists.get(interaction.guildId);
-		if (!args.length) video = interaction.options.get('name').value; else video = args[0];
+		let video, channel, resource, connection, potato = true, playlist = client.playlists.get(interaction.guildId), msg;
+		if (!args.length) video = interaction.options.get('title').value; else video = args.join(' ');
 		const vedeo = {};
 		// setting video info
 		if (validUrl.isUri(video)) {
@@ -37,7 +38,7 @@ module.exports = {
 			playlist = [];
 		}
 		if (interaction.member.voice.channelId) {
-			if (!playlist.length) await interaction.reply({ content : 'Now playing: ' + vedeo.url }); else await interaction.reply({ content: 'Added to queue: ' + vedeo.url });
+			if (!playlist.length) msg = await interaction.reply({ content : 'Now playing: ' + vedeo.url }); else msg = await interaction.reply({ content: 'Added to queue: ' + vedeo.url });
 			channel = interaction.member.voice.channelId;
 			connection = getVoiceConnection(interaction.guildId);
 			if (!connection) {
@@ -55,7 +56,8 @@ module.exports = {
 				}
 				catch (e) {
 					console.log(e);
-					await interaction.editReply('Bruh, only use youtube links plz, if you dont know the link use the title of the video');
+					if (interaction instanceof Interaction) {await interaction.editReply('Bruh, only use youtube links plz, if you dont know the link use the title of the video');}
+					else {(await msg.edit('Bruh, only use youtube links plz, if you dont know the link use the title of the video'));}
 					connection.destroy();
 					return;
 				}
