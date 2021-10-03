@@ -1,14 +1,14 @@
 const { SlashCommandBuilder } = require('@discordjs/builders');
-const { getVoiceConnection } = require('@discordjs/voice');
 module.exports = {
 	data: new SlashCommandBuilder()
 		.setName('stop')
 		.setDescription('stops manele'),
-	async execute(interaction) {
-		global.playlist = [];
-		global.player.stop();
-		const connection = getVoiceConnection(interaction.guildId);
-		connection.destroy();
+	// eslint-disable-next-line no-unused-vars
+	async execute(client, interaction, args) {
+		const playlist = [];
+		const player = client.players.get(interaction.guildId);
+		client.playlists.set(interaction.guildId, playlist);
+		player.stop();
 		await interaction.reply('Ok :(');
 	},
 };
