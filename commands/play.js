@@ -4,6 +4,7 @@ const { joinVoiceChannel, createAudioResource, getVoiceConnection, createAudioPl
 const util = require('util');
 const exec = util.promisify(require('child_process').exec);
 const validUrl = require('valid-url');
+const ismessage = require('../exports/functions');
 const { Interaction } = require('discord.js');
 module.exports = {
 	data: new SlashCommandBuilder()
@@ -14,6 +15,8 @@ module.exports = {
 				.setDescription('Se stie, url sau numele melodiei')
 				.setRequired(true)),
 	async execute(client, interaction, args) {
+		const init = interaction;
+		if (!(interaction instanceof Interaction))interaction = await interaction.reply('Loading video');
 		let video, channel, resource, connection, potato = true, playlist = client.playlists.get(interaction.guildId), msg;
 		if (!args.length) video = interaction.options.get('title').value; else video = args.join(' ');
 		const vedeo = {};
@@ -37,9 +40,14 @@ module.exports = {
 		if (!playlist) {
 			playlist = [];
 		}
-		if (interaction.member.voice.channelId) {
-			if (!playlist.length) msg = await interaction.reply({ content : 'Now playing: ' + vedeo.url }); else msg = await interaction.reply({ content: 'Added to queue: ' + vedeo.url });
-			channel = interaction.member.voice.channelId;
+		if (init.member.voice.channelId) {
+			if (!playlist.length) {
+				msg = { content : 'Now playing: ' + vedeo.url };
+			}
+			else {
+				msg = { content: 'Added to queue: ' + vedeo.url };
+			}
+			channel = init.member.voice.channelId;
 			connection = getVoiceConnection(interaction.guildId);
 			if (!connection) {
 				connection = joinVoiceChannel({
@@ -56,13 +64,14 @@ module.exports = {
 				}
 				catch (e) {
 					console.log(e);
-					if (interaction instanceof Interaction) {await interaction.editReply('Bruh, only use youtube links plz, if you dont know the link use the title of the video');}
-					else {(await msg.edit('Bruh, only use youtube links plz, if you dont know the link use the title of the video'));}
+					msg = 'Bruh, only use youtube links plz, if you dont know the link use the title of the video';
+					ismessage.verify(interaction, msg);
 					connection.destroy();
 					return;
 				}
 
 			}
+			ismessage.verify(interaction, msg);
 			// tldr player check
 			let player = client.players.get(interaction.guildId);
 			if (!player) {
@@ -71,7 +80,7 @@ module.exports = {
 					const splaylist = client.playlists.get(interaction.guildId);
 					splaylist.shift();
 					if (splaylist.length) {
-						resource = createAudioResource(splaylist[0].trueurl);
+						resource = createAudioResource(splaylist[0].trueurl, { inlineVolume: true });
 						player.play(resource);
 						client.playlists.set(interaction.guildId, splaylist);
 					}
@@ -85,7 +94,8 @@ module.exports = {
 				client.players.set(interaction.guildId, player);
 			}
 			if (!playlist.length) {
-				resource = createAudioResource(vedeo.trueurl);
+				resource = createAudioResource(vedeo.trueurl, { inlineVolume: true });
+				console.log(resource);
 				player.play(resource);
 				connection.subscribe(player);
 			}
@@ -93,7 +103,8 @@ module.exports = {
 			client.playlists.set(interaction.guildId, playlist);
 		}
 		else {
-			await interaction.reply('Please go to a voice channel!');
+			msg = 'Please go to a voice channel!';
+			ismessage.verify(interaction, msg);
 		}
 
 	},

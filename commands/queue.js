@@ -1,5 +1,6 @@
 const { SlashCommandBuilder } = require('@discordjs/builders');
-const { MessageEmbed } = require('discord.js');
+const { MessageEmbed, Interaction } = require('discord.js');
+const ismessage = require('../exports/functions');
 module.exports = {
 	data: new SlashCommandBuilder()
 		.setName('queue')
@@ -16,17 +17,18 @@ module.exports = {
 
 			.setTimestamp()
 			.setFooter('Legend', interaction.member.user.defaultAvatarURL);
+		if (!(interaction instanceof Interaction)) interaction = await interaction.reply('Loading command');
 		const playlist = client.playlists.get(interaction.guildId);
 		if (!playlist) {
 			exampleEmbed.addField('Esti taran', 'Nu ai muzica');
-			await interaction.reply({ embeds: [exampleEmbed] });
-			return;
 		}
-		if (playlist.length) exampleEmbed.addField('Now playing: ', playlist[0].title); else exampleEmbed.addField('Now playing: ', 'nothingness');
-		if (playlist.length > 1) {exampleEmbed.addField('In queue: ', '1. ' + playlist[1].title);}
-		for (i = 2; i < playlist.length; i++) {
-			exampleEmbed.fields[1].value = exampleEmbed.fields[1].value.concat('\n', i.toString(), '. ', playlist[i].title);
+		else {
+			if (playlist.length) exampleEmbed.addField('Now playing: ', playlist[0].title); else exampleEmbed.addField('Now playing: ', 'nothingness');
+			if (playlist.length > 1) {exampleEmbed.addField('In queue: ', '1. ' + playlist[1].title);}
+			for (i = 2; i < playlist.length; i++) {
+				exampleEmbed.fields[1].value = exampleEmbed.fields[1].value.concat('\n', i.toString(), '. ', playlist[i].title);
+			}
 		}
-		await interaction.reply({ embeds: [exampleEmbed] });
+		ismessage.verify(interaction, { embeds: [exampleEmbed] });
 	},
 };

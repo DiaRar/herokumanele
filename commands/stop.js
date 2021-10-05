@@ -1,4 +1,5 @@
 const { SlashCommandBuilder } = require('@discordjs/builders');
+const ismessage = require('../exports/functions');
 module.exports = {
 	data: new SlashCommandBuilder()
 		.setName('stop')
@@ -8,7 +9,7 @@ module.exports = {
 		const playlist = [];
 		const player = client.players.get(interaction.guildId);
 		client.playlists.set(interaction.guildId, playlist);
-		player.stop();
-		await interaction.reply('Ok :(');
+		if (player) {player.stop();}
+		ismessage.verify(interaction, 'Ok :(');
 	},
 };
