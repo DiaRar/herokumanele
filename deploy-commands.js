@@ -12,7 +12,7 @@ for (const file of commandFiles) {
 	commands.push(command.data.toJSON());
 }
 const rest = new REST({ version: '9' }).setToken(token);
-console.log(commands);
+// console.log(commands);
 rest.put(Routes.applicationCommands(clientId), { body: commands })
 	.then(() => console.log('Successfully registered application commands.'))
 	.catch(console.error);
