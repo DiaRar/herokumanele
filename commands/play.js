@@ -19,6 +19,7 @@ module.exports = {
 		if (!(interaction instanceof Interaction))interaction = await interaction.reply('Loading video');
 		let video, channel, resource, connection, potato = true, playlist = client.playlists.get(interaction.guildId), msg;
 		if (!args.length) video = interaction.options.get('title').value; else video = args.join(' ');
+		console.log(interaction.options);
 		const vedeo = {};
 		// setting video info
 		if (validUrl.isUri(video)) {
